@@ -1,6 +1,3 @@
-// npm install express body-parser cors express-fileupload morgan lodash fs @opendocsg/pdf2md --save
-
-
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
@@ -39,23 +36,15 @@ app.post('/convert', async (req, res) => {
                 message: 'No file uploaded'
             });
         } else {
-            // PDF file should be passed in the "data" key of the message body
-            let pdf = req.files.data;
+            // PDF file should be passed in the "pdfFile" key of the message body
+            let pdf = req.files.pdfFile.data;
 
-            const pdfBuffer = pdf.data
-            let outputFileName = pdf.name + '.md'
-            pdf2md(pdfBuffer)
-              .then(text => {
-                console.log(`Writing to ${outputFileName}...`)
-                fs.writeFileSync(path.resolve(outputFileName), text)
-                console.log('Done.')
-              })
-              .catch(err => {
-                console.error(err)
-              })
+            let markdown = await pdf2md(pdf)
 
-            // Send converted MD file back
-            res.sendFile(path.resolve(outputFileName))
+            res.send({
+                status: true,
+                data: markdown
+            });
         }
     } catch (err) {
         console.log(err)
